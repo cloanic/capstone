@@ -16,7 +16,7 @@ router.post('/groceries', async (req, res) => {
     const grocery = await Grocery.find({}).lean();
     const groceryItem = grocery.map(item => item.item);
     const groceryItemString = groceryItem.join(', ');
-    client.messages.create({
+    client.sendSms({
         body: `${groceryItemString}`,
         from: process.env.TWILIO_PHONE_NUMBER,
         to: req.body.phoneNumber
@@ -28,18 +28,12 @@ router.post('/groceries', async (req, res) => {
         res.send('Message sent');
     });
 
-    res.writeHead(200, {
-        'Content-Type':'text/xml'
-    });
-    res.end(res.toString());
-})
-
 // delete all grocery items from the database and send a sms with twilio
 router.delete('/groceries', async (req, res) => {
     await Grocery.deleteMany();
     res.send('All groceries deleted');
 }).post('/sms', async (req, res) => {
-    client.messages.create({
+    client.sendSMS({
         body: `All groceries deleted`,
         from: process.env.TWILIO_PHONE_NUMBER,
         to: req.body.phoneNumber
@@ -50,9 +44,4 @@ router.delete('/groceries', async (req, res) => {
     }).finally(() => {
         res.send('Message sent');
     })
-
-    res.writeHead(200, {
-        'Content-Type':'text/xml'
-    });
-    res.end(res.toString());
 })
