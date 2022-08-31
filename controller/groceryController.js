@@ -31,7 +31,7 @@ exports.getOneGrocery = async (req, res) => {
 
 // delete Grocery
 exports.deleteGroceries = async (req, res) => {
-    let grocery = await Grocery.findByIdAndDelete(req.params._id);
+    let grocery = await Grocery.deleteMany({});
     
     if(!grocery) {
         res.status(404).json({ message: 'Item not found' });
