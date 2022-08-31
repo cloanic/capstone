@@ -1,39 +1,48 @@
 const Grocery = require('../model/Grocery');
-const twilio = require('twilio');
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN, process.env.TWILIO_PHONE_NUMBER);
 const router = require('express').Router();
 require('dotenv').config();
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN, process.env.TWILIO_PHONE_NUMBER);
 
 
-router.get('/', async (req,res) => {
-    res.send("Welcome to the Grocery List API");
+// add grocery item and send it with twilio sms
+router.post('/groceries', async (req, res) => {
+    const grocery = new Grocery({
+        phoneNumber: req.body.phoneNumber,
+        item: req.body.item
+    });
+    await grocery.save();
+    res.send(grocery);
+}).post('/sms', async (req, res) => {
+    const grocery = await Grocery.find({}).lean();
+    const groceryItem = grocery.map(item => item.item);
+    const groceryItemString = groceryItem.join(', ');
+    client.messages.create({
+        body: `${groceryItemString}`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: req.body.phoneNumber
+    }).then(message => {
+        console.log(message.sid);
+    }).catch(err => {
+        console.log(err);
+    }).finally(() => {
+        res.send('Message sent');
+    });
 })
 
-// Send a text message to the user with their added grocery list
-router.post('/sms', async (req, res) => {
-    let twiml = new MessagingResponse();
-    if (req.body.Body == 'list') {
-        const groceries = await Grocery.find();
-        twiml.message(groceries.map(grocery => grocery.item).join('\n'));
-    } else if (req.body.Body == 'add') {
-        twiml.message('Please text the item you would like to add to the list.');
-        // Save the item to the database
-        const grocery = new Grocery({
-            phoneNumber: req.body.From,
-            item: req.body.Body
-        });
-        await grocery.save();
-    } else if (req.body.Body == 'delete') {
-        twiml.message('Deleting all of the listed items');
-        await Grocery.deleteMany();
-    } else {
-      twiml.message(
-        'No Body param match, Twilio sends this in the request to your server.'
-      );
-    }
-  
-    res.writeHead(200, { 'Content-Type': 'text/xml' });
-    res.end(twiml.toString());
-} )
-
-module.exports = router;
+// delete all grocery items from the database and send a sms with twilio
+router.delete('/groceries', async (req, res) => {
+    await Grocery.deleteMany();
+    res.send('All groceries deleted');
+}).post('/sms', async (req, res) => {
+    client.messages.create({
+        body: `All groceries deleted`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: req.body.phoneNumber
+    }).then(message => {
+        console.log(message.sid);
+    }).catch(err => {
+        console.log(err);
+    }).finally(() => {
+        res.send('Message sent');
+    })
+})

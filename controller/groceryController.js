@@ -1,40 +1,29 @@
 const Grocery = require('../model/Grocery');
 
-// add Grocery
+// add grocery item to the database
 exports.addGroceries = async (req, res) => {
-    let grocery = new Grocery(req.body);
+    const grocery = new Grocery({
+        phoneNumber: req.body.phoneNumber,
+        item: req.body.item
+    });
     await grocery.save();
-    res.xml(grocery);
+    res.send(grocery);
 }
 
-// get all Groceries 
+// get all grocery items from the database
 exports.getGroceries = async (req, res) => {
-    let groceries = await Grocery.find({}).lean;
-
-    if(!groceries) {
-        res.status(404).xml({ message: 'No items found' });
-    }
-    res.xml(groceries);
-
+    const groceries = await Grocery.find({}).lean;
+    res.send(groceries);
 }
 
-// get one Grocery
+// get one grocery item from the database
 exports.getOneGrocery = async (req, res) => {
-    let grocery = await Grocery.findById(req.params._id);
-
-    if (!grocery) {
-        res.status(404).xml({ message: 'Item not found' });
-    }
-    res.xml(grocery);
-
+    const grocery = await Grocery.findById(req.params.id);
+    res.send(grocery);
 }
 
-// delete Grocery
+// delete all grocery items from the database
 exports.deleteGroceries = async (req, res) => {
-    let grocery = await Grocery.deleteMany({});
-    
-    if(!grocery) {
-        res.status(404).xml({ message: 'Item not found' });
-    }
-    res.xml(grocery);
+    await Grocery.deleteMany();
+    res.send('All groceries deleted');
 }
