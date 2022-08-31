@@ -4,7 +4,7 @@ const Grocery = require('../model/Grocery');
 exports.addGroceries = async (req, res) => {
     let grocery = new Grocery(req.body);
     await grocery.save();
-    res.json(grocery);
+    res.xml(grocery);
 }
 
 // get all Groceries 
@@ -12,9 +12,9 @@ exports.getGroceries = async (req, res) => {
     let groceries = await Grocery.find({}).lean;
 
     if(!groceries) {
-        res.status(404).json({ message: 'No items found' });
+        res.status(404).xml({ message: 'No items found' });
     }
-    res.json(groceries);
+    res.xml(groceries);
 
 }
 
@@ -23,9 +23,9 @@ exports.getOneGrocery = async (req, res) => {
     let grocery = await Grocery.findById(req.params._id);
 
     if (!grocery) {
-        res.status(404).json({ message: 'Item not found' });
+        res.status(404).xml({ message: 'Item not found' });
     }
-    res.json(grocery);
+    res.xml(grocery);
 
 }
 
@@ -34,7 +34,7 @@ exports.deleteGroceries = async (req, res) => {
     let grocery = await Grocery.deleteMany({});
     
     if(!grocery) {
-        res.status(404).json({ message: 'Item not found' });
+        res.status(404).xml({ message: 'Item not found' });
     }
-    res.json(grocery);
+    res.xml(grocery);
 }
