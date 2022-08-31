@@ -27,6 +27,11 @@ router.post('/groceries', async (req, res) => {
     }).finally(() => {
         res.send('Message sent');
     });
+
+    res.writeHead(200, {
+        'Content-Type':'text/xml'
+    });
+    res.end(res.toString());
 })
 
 // delete all grocery items from the database and send a sms with twilio
@@ -45,4 +50,9 @@ router.delete('/groceries', async (req, res) => {
     }).finally(() => {
         res.send('Message sent');
     })
+
+    res.writeHead(200, {
+        'Content-Type':'text/xml'
+    });
+    res.end(res.toString());
 })
